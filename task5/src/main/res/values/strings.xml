@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">My Application</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="fragment1_title">Fragment 1</string>
+    <string name="f1ToSecond">to second</string>
+    <string name="fragment_2">Fragment 2</string>
+    <string name="f2ToFirst">to first</string>
+    <string name="f2ToThird">to third</string>
+    <string name="fragment_3">Fragment 3</string>
+    <string name="f3ToFirst">to first</string>
+    <string name="f3ToSecond">to second</string>
+    <string name="activity_about">Activity About</string>
+    <string name="item_about">about</string>
+</resources>
