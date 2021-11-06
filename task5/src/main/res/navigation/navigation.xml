@@ -41,4 +41,9 @@
             app:destination="@id/fragment1"
             app:popUpTo="@id/navigation" />
     </fragment>
+    <activity
+        android:id="@+id/activityAbout"
+        android:name="com.example.task5.ActivityAbout"
+        android:label="activity_about"
+        tools:layout="@layout/activity_about" />
 </navigation>
