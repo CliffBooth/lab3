@@ -18,10 +18,4 @@ public class ChronoActivity1 extends AppCompatActivity {
 
         chronometer.start();
     }
-
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-    }
 }
