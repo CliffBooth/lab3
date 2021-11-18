@@ -8,6 +8,6 @@
     <string name="btn3ToFirst">to first</string>
     <string name="btn3ToSecond">to second</string>
     <string name="activity3_title">Activity 3</string>
-    <string name="menu_about">about</string>
+    <string name="title_about">about</string>
     <string name="activityAbout_title">Activity about</string>
 </resources>

@@ -11,5 +11,5 @@
     <string name="f3ToFirst">to first</string>
     <string name="f3ToSecond">to second</string>
     <string name="activity_about">Activity About</string>
-    <string name="item_about">about</string>
+    <string name="title_about">about</string>
 </resources>

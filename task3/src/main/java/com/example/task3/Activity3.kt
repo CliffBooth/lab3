@@ -13,9 +13,9 @@ class Activity3 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = Activity3Binding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.btn3ToSecond.setOnClickListener { finish() }
-        binding.btn3ToFirst.setOnClickListener {
-            val intent = Intent(this, Activity1::class.java)
+        binding.bnToSecond.setOnClickListener { finish() }
+        binding.bnToFirst.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             startActivity(intent)
         }

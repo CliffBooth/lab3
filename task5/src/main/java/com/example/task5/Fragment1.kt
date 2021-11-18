@@ -18,7 +18,7 @@ class Fragment1 : Fragment(R.layout.fragment1) {
         savedInstanceState: Bundle?
     ): View {
         binding = Fragment1Binding.inflate(inflater, container, false)
-        binding.btn1ToSecond.setOnClickListener {
+        binding.bnToSecond.setOnClickListener {
             Log.i("fragment1", "clicked")
             it.findNavController().navigate(R.id.action_fragment1_to_fragment2)
         }

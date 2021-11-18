@@ -17,7 +17,7 @@ public class LocationActivity extends AppCompatActivity {
 
     private static final int REQUEST_LOCATION_PERMISSION_CODE = 1;
 
-    private LocationListener mGpsListener = new MyLocationListener();
+    private final LocationListener mGpsListener = new MyLocationListener();
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
@@ -56,7 +56,9 @@ public class LocationActivity extends AppCompatActivity {
         @Override
         public void onLocationChanged(Location location) {
             TextView textView = findViewById(R.id.location);
-            textView.setText(location.getLatitude() + ", " + location.getLongitude());
+            textView.setText(
+                    getString(R.string.coordinates, location.getLatitude(), location.getLongitude())
+            );
         }
 
         @Override

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity1">
+    tools:context=".MainActivity"
+    android:id="@+id/fragment1">
 
     <TextView
         android:id="@+id/textView1"
@@ -19,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/btn1ToSecond"
+        android:id="@+id/bnToSecond"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/btn1ToSecond"

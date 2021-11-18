@@ -16,10 +16,10 @@ class Fragment2 : Fragment(R.layout.fragment2) {
     ): View {
         binding = Fragment2Binding.inflate(inflater, container, false)
         val navController = findNavController()
-        binding.btn2ToFirst.setOnClickListener {
+        binding.bnToFirst.setOnClickListener {
             navController.navigate(R.id.action_fragment2_to_fragment1)
         }
-        binding.btn2ToThird.setOnClickListener {
+        binding.bnToThird.setOnClickListener {
             navController.navigate(R.id.action_fragment2_to_fragment3)
         }
         setHasOptionsMenu(true)
