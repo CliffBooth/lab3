@@ -13,7 +13,7 @@ class Activity1 : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = Activity1Binding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.btn1ToSecond.setOnClickListener {
+        binding.bnToSecond.setOnClickListener {
             val intent = Intent(this, Activity2::class.java)
             startActivity(intent)
         }
