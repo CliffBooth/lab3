@@ -22,7 +22,7 @@
         <action
             android:id="@+id/action_fragment2_to_fragment1"
             app:destination="@id/fragment1"
-            app:popUpTo="@id/navigation" />
+            app:popUpTo="@id/navigation"/>
         <action
             android:id="@+id/action_fragment2_to_fragment3"
             app:destination="@id/fragment3" />
@@ -39,11 +39,11 @@
         <action
             android:id="@+id/action_fragment3_to_fragment1"
             app:destination="@id/fragment1"
-            app:popUpTo="@id/navigation" />
+            app:popUpTo="@id/navigation"/>
     </fragment>
     <activity
-        android:id="@+id/activityAbout"
+        android:id="@+id/about"
         android:name="com.example.task5.ActivityAbout"
         android:label="activity_about"
-        tools:layout="@layout/activity_about" />
+        tools:layout="@layout/activity_about"/>
 </navigation>

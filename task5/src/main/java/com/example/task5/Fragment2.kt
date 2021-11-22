@@ -25,19 +25,4 @@ class Fragment2 : Fragment(R.layout.fragment2) {
         setHasOptionsMenu(true)
         return binding.root
     }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.about -> {
-                findNavController().navigate(R.id.activityAbout)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 }

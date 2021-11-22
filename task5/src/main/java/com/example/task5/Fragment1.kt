@@ -2,10 +2,11 @@ package com.example.task5
 
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.findNavController
 import com.example.task5.databinding.Fragment1Binding
 
 
@@ -24,20 +25,5 @@ class Fragment1 : Fragment(R.layout.fragment1) {
         }
         setHasOptionsMenu(true)
         return binding.root
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.about -> {
-                findNavController().navigate(R.id.activityAbout)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
     }
 }
