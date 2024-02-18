@@ -17,58 +17,13 @@ from tensorflow.keras.preprocessing import image
 from datetime import datetime
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
 
-from app_data import captions
-from app_model import get_model, tokenizer
+from app_data import captions, get_datasets
+from app_model import get_model
 from app_const import *
 
 model_path = os.path.join("models", f"{datetime.now().strftime('%d.%m_%H-%M')}")
 
-img_to_cap_vector = collections.defaultdict(list)
-for img, cap in zip(captions['image'], captions['caption']):
-    img_to_cap_vector[img].append(cap)
-
-img_keys = list(img_to_cap_vector.keys())
-random.shuffle(img_keys)
-
-slice_index = int(len(img_keys)*0.8)
-img_name_train_keys, img_name_val_keys = (img_keys[:slice_index],
-                                          img_keys[slice_index:])
-
-train_imgs = []
-train_captions = []
-for imgt in img_name_train_keys:
-    capt_len = len(img_to_cap_vector[imgt])
-    train_imgs.extend([imgt] * capt_len)
-    train_captions.extend(img_to_cap_vector[imgt])
-
-val_imgs = []
-val_captions = []
-for imgv in img_name_val_keys:
-    capv_len = len(img_to_cap_vector[imgv])
-    val_imgs.extend([imgv] * capv_len)
-    val_captions.extend(img_to_cap_vector[imgv])
-
-def load_data(img_path, caption):
-    img = tf.io.read_file(img_path)
-    img = tf.io.decode_jpeg(img, channels=3)
-    img = tf.keras.layers.Resizing(299, 299)(img)
-    img = img / 255.
-    caption = tokenizer(caption)
-    return img, caption
-
-train_dataset = tf.data.Dataset.from_tensor_slices(
-    (train_imgs, train_captions))
-
-train_dataset = train_dataset.map(
-    load_data, num_parallel_calls=tf.data.AUTOTUNE
-    ).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
-
-val_dataset = tf.data.Dataset.from_tensor_slices(
-    (val_imgs, val_captions))
-
-val_dataset = val_dataset.map(
-    load_data, num_parallel_calls=tf.data.AUTOTUNE
-    ).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+train_dataset, val_dataset = get_datasets()
 
 caption_model = get_model()
 

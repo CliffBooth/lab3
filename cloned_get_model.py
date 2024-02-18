@@ -1,17 +1,34 @@
+import pickle
 import tensorflow as tf
-from app_const import *
-# from app_data import captions
 import pandas as pd
-from tokenizer import get_tokenizer
+import numpy as np
 
-# mapping each word to a unique integer
-tokenizer = get_tokenizer()
+# CONTANTS
+MAX_LENGTH = 40
+VOCABULARY_SIZE = 10000
+BATCH_SIZE = 32
+BUFFER_SIZE = 1000
+EMBEDDING_DIM = 512
+UNITS = 512
 
-captions = pd.read_csv('flickr8k/captions.txt')
-captions['image'] = captions['image'].apply(lambda x: f'flickr8k/images/{x}')
+# LOADING DATA
+vocab = pickle.load(open('vocab.file', 'rb')) # TODO: better load dataset and adapt()
 
-tokenizer.adapt(captions['caption'])
+tokenizer = tf.keras.layers.TextVectorization(
+    max_tokens=VOCABULARY_SIZE,
+    standardize=None,
+    output_sequence_length=MAX_LENGTH,
+    vocabulary=vocab
+)
 
+idx2word = tf.keras.layers.StringLookup(
+    mask_token="",
+    vocabulary=tokenizer.get_vocabulary(),
+    invert=True
+)
+
+
+# MODEL
 def CNN_Encoder():
     inception_v3 = tf.keras.applications.InceptionV3(
         include_top=False,
@@ -36,6 +53,7 @@ class TransformerEncoderLayer(tf.keras.layers.Layer):
         self.attention = tf.keras.layers.MultiHeadAttention(
             num_heads=num_heads, key_dim=embed_dim)
         self.dense = tf.keras.layers.Dense(embed_dim, activation="relu")
+
 
     def call(self, x, training):
         x = self.layer_norm_1(x)
@@ -232,30 +250,49 @@ class ImageCaptioningModel(tf.keras.Model):
         return [self.loss_tracker, self.acc_tracker]
 
 
-def get_model():
+def load_image_from_path(img_path):
+    img = tf.io.read_file(img_path)
+    img = tf.io.decode_jpeg(img, channels=3)
+    img = tf.keras.layers.Resizing(299, 299)(img)
+    img = img / 255.
+    return img
+
+
+def generate_caption(img, caption_model):
+    if isinstance(img, str):
+        img = load_image_from_path(img)
+
+    if isinstance(img, np.ndarray):
+        img = tf.convert_to_tensor(img)
+
+    img = tf.expand_dims(img, axis=0)
+    img_embed = caption_model.cnn_model(img)
+    img_encoded = caption_model.encoder(img_embed, training=False)
+
+    y_inp = '[start]'
+    for i in range(MAX_LENGTH - 1):
+        tokenized = tokenizer([y_inp])[:, :-1]
+        mask = tf.cast(tokenized != 0, tf.int32)
+        pred = caption_model.decoder(
+            tokenized, img_encoded, training=False, mask=mask)
+
+        pred_idx = np.argmax(pred[0, i, :])
+        pred_word = idx2word(pred_idx).numpy().decode('utf-8')
+        if pred_word == '[end]':
+            break
+
+        y_inp += ' ' + pred_word
+
+    y_inp = y_inp.replace('[start] ', '')
+    return y_inp
+
+
+def get_caption_model(path):
     encoder = TransformerEncoderLayer(EMBEDDING_DIM, 1)
     decoder = TransformerDecoderLayer(EMBEDDING_DIM, UNITS, 8)
 
     cnn_model = CNN_Encoder()
 
-    image_augmentation = tf.keras.Sequential(
-        [
-            tf.keras.layers.RandomFlip("horizontal"),
-            tf.keras.layers.RandomRotation(0.2),
-            tf.keras.layers.RandomContrast(0.3),
-        ]
-    )
-
-    caption_model = ImageCaptioningModel(
-        cnn_model=cnn_model, encoder=encoder, decoder=decoder, image_aug=image_augmentation,
-    )
-    return caption_model
-
-def load_model(weights_path):
-    encoder = TransformerEncoderLayer(EMBEDDING_DIM, 1)
-    decoder = TransformerDecoderLayer(EMBEDDING_DIM, UNITS, 8)
-
-    cnn_model = CNN_Encoder()
     caption_model = ImageCaptioningModel(
         cnn_model=cnn_model, encoder=encoder, decoder=decoder, image_aug=None,
     )
@@ -265,11 +302,13 @@ def load_model(weights_path):
 
     caption_model.call = call_fn
     sample_x, sample_y = tf.random.normal((1, 299, 299, 3)), tf.zeros((1, 40))
+
     caption_model((sample_x, sample_y))
+
     sample_img_embed = caption_model.cnn_model(sample_x)
     sample_enc_out = caption_model.encoder(sample_img_embed, training=False)
     caption_model.decoder(sample_y, sample_enc_out, training=False)
 
-    caption_model.load_weights(weights_path)
+    caption_model.load_weights(path)
 
     return caption_model
