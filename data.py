@@ -5,14 +5,15 @@ import random
 
 import pandas as pd
 
-from app_const import *
-# from tokenizer import get_tokenizer
-from app_model import tokenizer
+from const import *
+from tokenizer import get_tokenizer
 
-# tokenizer = get_tokenizer()
+tokenizer = get_tokenizer()
 
 captions = pd.read_csv('flickr8k/captions.txt')
 captions['image'] = captions['image'].apply(lambda x: f'flickr8k/images/{x}')
+
+tokenizer.adapt(captions['caption'])
 
 img_to_cap_vector = collections.defaultdict(list)
 for img, cap in zip(captions['image'], captions['caption']):

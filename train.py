@@ -1,97 +1,43 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms as transforms
-from torch.utils.tensorboard import SummaryWriter
-from utils import save_checkpoint, load_checkpoint, print_examples
-from loader import get_loader
-from model import CNNtoRNN
-from tqdm.auto import tqdm
-from datetime import datetime
 import os
+from datetime import datetime
+import tensorflow as tf
+from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, EarlyStopping
+from data import get_datasets
+from model import get_model
 
-model_dir = None
+model_path = os.path.join("models", f"{datetime.now().strftime('%d.%m_%H-%M')}")
 
-def train():
-    transform = transforms.Compose(
-        [
-            transforms.Resize((356, 356)),
-            transforms.RandomCrop((299, 299)),
-            transforms.ToTensor(),
-            transforms.Normalize((.5, .5, .5), (.5, .5, .5)),
-        ]
-    )
+train_dataset, val_dataset = get_datasets()
 
-    train_loader, dataset = get_loader(
-        root_folder="flickr8k/images",
-        annotation_file="flickr8k/captions.txt",
-        transform=transform,
-        num_workers=2,
-    )
+caption_model = get_model()
 
-    torch.backends.cudnn.benchmark = True
-    device = torch.device("cuda")
-    load_model = False
-    save_model = True
+cross_entropy = tf.keras.losses.SparseCategoricalCrossentropy(
+    from_logits=False, reduction="none"
+)
 
-    embed_size = 256
-    hidden_size = 256
-    vocab_size = len(dataset.vocab)
-    num_layers = 1
-    learning_rate = 3e-4
-    num_epochs = 100
+early_stopping = EarlyStopping(patience=3, restore_best_weights=True)
+tb_callback = TensorBoard(f'{model_path}/logs', update_freq=1)
+weights_checkpoint = ModelCheckpoint(f"{model_path}/pretrained_weights.h5", monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
 
-    writer =  SummaryWriter(os.path.join(model_dir, "runs/flickr"))
-    step = 0
+caption_model.compile(
+    optimizer=tf.keras.optimizers.Adam(),
+    loss=cross_entropy
+)
 
-    model = CNNtoRNN(embed_size, hidden_size, vocab_size, num_layers).to(device)
-    criterion = nn.CrossEntropyLoss(ignore_index=dataset.vocab.stoi["<PAD>"])
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+history = caption_model.fit(
+    train_dataset,
+    epochs=1,
+    validation_data=val_dataset,
+    callbacks=[
+        early_stopping,
+        tb_callback,
+        weights_checkpoint
+    ]
+)
 
-    if load_model:
-        checkpoint_path = "my_checkpoint.pth.tar"
-        step = load_checkpoint(torch.load(checkpoint_path), model, optimizer)
+save_model_path = f"{model_path}/model"
+tf.saved_model.save(caption_model, save_model_path)
 
-    model.train()
-
-    # for epoch in tqdm(range(num_epochs), desc="epoch"):
-    for index, epoch in enumerate(range(num_epochs)):
-        print(f"EPOCH: {index}")
-        print_examples(model, device, dataset)
-        if save_model:
-            checkpoint = {
-                "state_dict": model.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "step": step,
-            }
-            save_checkpoint(checkpoint, os.path.join(model_dir, "checkpoint.pth.tar"))
-
-        for idx, (imgs, captions) in enumerate(tqdm(train_loader, desc="training on examples")):
-            # print(f"\n{idx}")
-            imgs = imgs.to(device)
-            captions = captions.to(device)
-            # print(type(captions[:-1]))
-            # print(imgs)
-            # print(captions[:-1])
-            outputs = model(imgs, captions[:-1])
-            loss = criterion(outputs.reshape(-1, outputs.shape[2]), captions.reshape(-1))
-
-            writer.add_scalar("Training loss", loss.item(), global_step=step)
-            step += 1
-
-            optimizer.zero_grad()
-            loss.backward(loss)
-            optimizer.step()
-
-    checkpoint = {
-        "state_dict": model.state_dict(),
-        "optimizer": optimizer.state_dict(),
-        "step": step,
-    }
-    save_checkpoint(checkpoint, os.path.join(model_dir, "resulting.pth.tar"))
-
-
-if __name__ == '__main__':
-    model_dir = os.path.join("models(unsuccessful)", f"{datetime.now().strftime('%d.%m_%H-%M')}")
-    print(f"model_dir = {model_dir}")
-    train()
+caption_model.cnn_model.save_weights(f'{model_path}/cnn_model')
+caption_model.encoder.save_weights(f'{model_path}/encoder')
+caption_model.decoder.save_weights(f'{model_path}/decoder')
