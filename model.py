@@ -3,7 +3,11 @@ import numpy as np
 from data import captions
 
 from tokenizer import get_tokenizer
-from const import *
+# from const import *
+
+MAX_LENGTH = 40
+EMBEDDING_DIM = 512
+UNITS = 512
 
 tokenizer = get_tokenizer()
 
